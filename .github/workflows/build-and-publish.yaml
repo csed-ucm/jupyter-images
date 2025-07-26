@@ -26,6 +26,10 @@ jobs:
           echo "matrix={\"include\":[${entries}]}" >> $GITHUB_OUTPUT
   build_and_publish:
     needs: discover
+    # Allow writing to packages registry for GHCR push
+    permissions:
+      contents: read
+      packages: write
     runs-on: arc-runner-k8s
     strategy:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
