@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir \
 	langchain-text-splitters \
 	qdrant-client \
 	devtools \
-	dotenv \
+	python-dotenv \
 	pydantic \
 	mlflow \
 	ollama
