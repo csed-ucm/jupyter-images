@@ -1,4 +1,4 @@
-FROM jupyter/datascience-notebook:latest
+FROM quay.io/jupyter/datascience-notebook:latest
 
 # Switch to root to install additional packages
 RUN pip install --no-cache-dir \
@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir \
 	langchain-text-splitters \
 	qdrant-client \
 	devtools \
-	load_dotenv \
+	dotenv \
 	pydantic \
 	mlflow \
 	ollama
