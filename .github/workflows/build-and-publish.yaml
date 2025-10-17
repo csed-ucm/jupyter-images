@@ -10,7 +10,7 @@ on:
 jobs:
   discover:
     name: Discover image directories
-    runs-on: arc-runner-k8s
+    runs-on: omen
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -30,7 +30,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    runs-on: arc-runner-k8s
+    runs-on: omen
     strategy:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
     steps:
