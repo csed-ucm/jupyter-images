@@ -47,4 +47,10 @@ RUN python3 -m pip install --no-cache-dir torch --index-url https://download.pyt
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME="/home/${NB_USER}"
-RUN adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER
+RUN adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER}
+WORKDIR ${HOME}
+# Switch to the new user
+USER ${NB_USER}
+
+# Step 7: Define the Entrypoint for JupyterHub
+# This command starts the single-user notebook server that JupyterHub
