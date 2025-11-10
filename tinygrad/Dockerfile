@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     wget \
     build-essential \
+    python3-full \
     python3-pip \
     python3-dev \
     clang \
