@@ -1,56 +1,50 @@
-# Dockerfile for tinygrad on JupyterHub with CUDA 13.0
+# Dockerfile for tinygrad on JupyterHub with CUDA 13.0 using a virtual environment
 
-# Step 1: Base Image with CUDA Development Toolkit
-# CHANGED: Updated to CUDA 13.0.1 to match your node's driver capabilities.
-# This ensures nvcc can generate compatible PTX code for your GPU.
 FROM nvidia/cuda:13.0.2-devel-ubuntu24.04
 
-# Step 2: Set up Environment
-# Prevent interactive prompts during installation and configure CUDA paths.
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/usr/local/cuda/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
-# Step 3: Install System Dependencies, Python, and Jupyter
-# We need git to clone tinygrad and Python to run it.
-# Then, we install the necessary Jupyter components for JupyterHub.
-# CHANGED: Added 'clang' to the list of packages.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     wget \
+    ca-certificates \
     build-essential \
-    python3-full \
+    python3 \
     python3-pip \
     python3-dev \
+    python3-venv \
     clang \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install Jupyter components
-RUN python3 -m pip install --no-cache-dir --upgrade pip
-RUN python3 -m pip install --no-cache-dir jupyterhub jupyterlab notebook
+# Create and activate virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Step 4: Install tinygrad from Source
-# Cloning the repository ensures we get the latest version.
+# Upgrade pip inside venv safely
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install Jupyter stack
+RUN pip install --no-cache-dir jupyterhub jupyterlab notebook
+
+# tinygrad
 RUN git clone https://github.com/geohot/tinygrad.git /opt/tinygrad
 WORKDIR /opt/tinygrad
-# Install in editable mode; this is good practice.
-RUN python3 -m pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -e .
 
-# Step 5: (Optional) Install PyTorch for Verification
-# CHANGED: Updated the PyTorch wheel to cu130 to align with the CUDA version.
-RUN python3 -m pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu130
+# Optional PyTorch (may fail if cu130 wheels not published yet)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu130 || \
+    (echo "WARNING: PyTorch cu130 wheel not found yet; continuing without torch" && true)
 
-# Step 6: Create a Non-Root User for Jupyter
-# Running containers as a non-root user is a security best practice.
-# 'jovyan' is the standard user for the Jupyter project.
+# Non-root user
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME="/home/${NB_USER}"
-RUN adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER}
+RUN adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER} && chown -R ${NB_USER}:${NB_USER} /opt/venv
 WORKDIR ${HOME}
-# Switch to the new user
 USER ${NB_USER}
 
-# Step 7: Define the Entrypoint for JupyterHub
-# This command starts the single-user notebook server that JupyterHub
+EXPOSE 8888
+CMD ["jupyter-lab", "--ip=0.0.0.0", "--no-browser", "--NotebookApp.token=", "--NotebookApp.allow_origin='*'"]
