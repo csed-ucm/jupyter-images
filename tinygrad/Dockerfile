@@ -3,7 +3,7 @@
 # Step 1: Base Image with CUDA Development Toolkit
 # CHANGED: Updated to CUDA 13.0.1 to match your node's driver capabilities.
 # This ensures nvcc can generate compatible PTX code for your GPU.
-FROM nvidia/cuda:13.0.1-devel-ubuntu22.04
+FROM nvidia/cuda:13.0.2-devel-ubuntu24.04
 
 # Step 2: Set up Environment
 # Prevent interactive prompts during installation and configure CUDA paths.
