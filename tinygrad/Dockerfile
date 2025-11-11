@@ -43,5 +43,6 @@ ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME="/home/${NB_USER}"
 RUN adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER}
+
 WORKDIR ${HOME}
 USER ${NB_USER}
