@@ -42,7 +42,6 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME="/home/${NB_USER}"
-RUN id -u ${NB_USER} >/dev/null 2>&1 || adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER}
 
 WORKDIR ${HOME}
 USER ${NB_USER}
