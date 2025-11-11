@@ -42,9 +42,6 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME="/home/${NB_USER}"
-RUN adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER} && chown -R ${NB_USER}:${NB_USER} /opt/venv
+RUN adduser --disabled-password --gecos "Default user" --uid ${NB_UID} ${NB_USER}
 WORKDIR ${HOME}
 USER ${NB_USER}
-
-EXPOSE 8888
-CMD ["jupyter-lab", "--ip=0.0.0.0", "--no-browser", "--NotebookApp.token=", "--NotebookApp.allow_origin='*'"]
