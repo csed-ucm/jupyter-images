@@ -49,11 +49,16 @@ RUN EXISTING_USER=$(getent passwd 1000 | cut -d: -f1) && \
     if [ -n "$EXISTING_USER" ]; then \
         echo "Renaming existing UID 1000 user: $EXISTING_USER -> jovyan"; \
         usermod -l jovyan -d /home/jovyan -m "$EXISTING_USER"; \
+        groupmod -n jovyan "$EXISTING_USER" || true; \
     else \
         echo "No existing UID 1000 user found, creating jovyan"; \
         useradd -m -s /bin/bash -u 1000 jovyan; \
-    fi
+    fi && \
+    # ensure group exists and home ownership is correct
+    chown -R jovyan:$(id -gn jovyan) /home/jovyan
+
 USER jovyan
+
 
 RUN chown -R jovyan:jovyan /home/jovyan
 
