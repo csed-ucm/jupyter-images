@@ -43,5 +43,19 @@ ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME="/home/${NB_USER}"
 
+USER root
+# Detect existing UID 1000 user (usually "ubuntu" or "user") and rename it to jovyan
+RUN EXISTING_USER=$(getent passwd 1000 | cut -d: -f1) && \
+    if [ -n "$EXISTING_USER" ]; then \
+        echo "Renaming existing UID 1000 user: $EXISTING_USER -> jovyan"; \
+        usermod -l jovyan -d /home/jovyan -m "$EXISTING_USER"; \
+    else \
+        echo "No existing UID 1000 user found, creating jovyan"; \
+        useradd -m -s /bin/bash -u 1000 jovyan; \
+    fi
+USER jovyan
+
+RUN chown -R jovyan:jovyan /home/jovyan
+
 WORKDIR ${HOME}
 USER ${NB_USER}
