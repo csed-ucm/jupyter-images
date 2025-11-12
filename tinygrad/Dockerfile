@@ -59,5 +59,7 @@ RUN EXISTING_USER=$(getent passwd 1000 | cut -d: -f1) && \
 
 USER jovyan
 
+RUN chown -R jovyan:$(id -gn jovyan) /home/jovyan /opt/venv || true
+
 WORKDIR ${HOME}
 USER ${NB_USER}
