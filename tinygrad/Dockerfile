@@ -43,23 +43,17 @@ ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV HOME="/home/${NB_USER}"
 
-USER root
-# Detect existing UID 1000 user (usually "ubuntu" or "user") and rename it to jovyan
-RUN EXISTING_USER=$(getent passwd 1000 | cut -d: -f1) && \
-    if [ -n "$EXISTING_USER" ]; then \
-        echo "Renaming existing UID 1000 user: $EXISTING_USER -> jovyan"; \
-        usermod -l jovyan -d /home/jovyan -m "$EXISTING_USER"; \
-        groupmod -n jovyan "$EXISTING_USER" || true; \
-    else \
-        echo "No existing UID 1000 user found, creating jovyan"; \
-        useradd -m -s /bin/bash -u 1000 jovyan; \
-    fi && \
-    # ensure group exists and home ownership is correct
-    chown -R jovyan:$(id -gn jovyan) /home/jovyan
+RUN echo "Deleting user/group ubuntu (UID/GID 1000)..." && \
+    (userdel -f ubuntu || true) && \
+    (groupdel ubuntu || true)  && \
+    echo "Creating ${NB_USER} user with UID/GID 1000..." && \
+    adduser --disabled-password --gecos "Default Jupyter user" --uid ${NB_UID} ${NB_USER} && \
+    # Set home directory of jovyan user
+    usermod --home /home/${NB_USER} --move-home ${NB_USER} && \
+    # Make sure that /srv is owned by non-root user, so we can install things there
+    chown -R ${NB_USER}:${NB_USER} /srv
 
 USER jovyan
-
-RUN chown -R jovyan:$(id -gn jovyan) /home/jovyan /opt/venv || true
 
 WORKDIR ${HOME}
 USER ${NB_USER}
