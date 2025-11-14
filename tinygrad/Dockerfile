@@ -1,4 +1,4 @@
-FROM nvidia/cuda:13.0.2-devel-ubuntu24.04
+[cite_start]FROM nvidia/cuda:13.0.2-devel-ubuntu24.04 [cite: 5]
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/usr/local/cuda/bin:${PATH}"
@@ -20,14 +20,31 @@ RUN pip install --no-cache-dir jupyterhub jupyterlab notebook
 RUN git clone https://github.com/geohot/tinygrad.git /opt/tinygrad
 WORKDIR /opt/tinygrad
 RUN pip install --no-cache-dir -e .
+[cite_start]RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu130 [cite: 6] \
+    [cite_start]|| echo "WARNING: torch cu130 unavailable" [cite: 7]
 
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu130 \
-    || echo "WARNING: torch cu130 unavailable"
+# --- FIX: Rename default 'ubuntu' user (UID 1000) to 'jovyan' ---
 
-# --- IMPORTANT PART ---
-# Ensure directory permissions match JupyterHub users (UID=1000)
-RUN mkdir -p /home/ubuntu && \
-    chown -R 1000:1000 /home/ubuntu /opt/venv /opt/tinygrad /srv
+ARG NB_USER=jovyan
+ARG NB_UID=1000
+ARG NB_GID=1000
+ENV HOME="/home/${NB_USER}"
 
-USER 1000:1000
-WORKDIR /home/ubuntu
+# 1. Rename the existing 'ubuntu' group (GID 1000) to 'jovyan'
+RUN groupmod -n ${NB_USER} ubuntu
+
+# 2. Rename the 'ubuntu' user (UID 1000) to 'jovyan',
+#    move home dir to /home/jovyan, and set new group
+RUN usermod -l ${NB_USER} -d ${HOME} -m -g ${NB_GID} ubuntu
+
+# 3. Change ownership of all our working directories to this user
+RUN chown -R ${NB_UID}:${NB_GID} ${HOME} /opt/venv /opt/tinygrad /srv
+
+# --- End Fix ---
+
+# Switch to the 'jovyan' user (now 1000:1000)
+USER ${NB_UID}:${NB_GID}
+WORKDIR ${HOME}
+
+# Set the default command for JupyterHub
+CMD ["jupyterhub-singleuser"]
