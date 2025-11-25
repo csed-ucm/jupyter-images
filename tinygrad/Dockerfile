@@ -1,4 +1,4 @@
-[cite_start]FROM nvidia/cuda:13.0.2-devel-ubuntu24.04 [cite: 5]
+FROM nvidia/cuda:13.0.2-devel-ubuntu24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/usr/local/cuda/bin:${PATH}"
