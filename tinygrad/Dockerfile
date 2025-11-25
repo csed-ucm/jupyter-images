@@ -20,8 +20,8 @@ RUN pip install --no-cache-dir jupyterhub jupyterlab notebook
 RUN git clone https://github.com/geohot/tinygrad.git /opt/tinygrad
 WORKDIR /opt/tinygrad
 RUN pip install --no-cache-dir -e .
-[cite_start]RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu130 [cite: 6] \
-    [cite_start]|| echo "WARNING: torch cu130 unavailable" [cite: 7]
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu130 \
+    || echo "WARNING: torch cu130 unavailable"
 
 # --- FIX: Rename default 'ubuntu' user (UID 1000) to 'jovyan' ---
 
